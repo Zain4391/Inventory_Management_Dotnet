@@ -60,6 +60,8 @@ try
 
     app.UseSerilogRequestLogging();
 
+    app.UseExceptionHandler();
+
     app.MapControllers();
 
     app.Run();
