@@ -2,7 +2,7 @@ using Inventory_Management_dotnet.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Inventory_Management_dotnet.Configs;
+namespace Inventory_Management_dotnet.Data.Configs;
 
 public sealed class ProductImageConfig : IEntityTypeConfiguration<ProductImage>
 {
