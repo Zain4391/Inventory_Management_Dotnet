@@ -30,5 +30,5 @@ public class User
 
     public string? ProfileImageUrl {get; set;}
 
-    // Add List<Order> when Order Entity is made
+    public ICollection<Order> Orders {get; set;} = [];
 }
