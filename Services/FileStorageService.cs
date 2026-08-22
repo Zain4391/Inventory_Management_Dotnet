@@ -29,14 +29,14 @@ public class FileStorageService : IFileStorageService
         string extension = Path.GetExtension(File.FileName);
 
         // Validate the file
-        _logger.LogDebug("Validating File extension and signature...");
+        _logger.LogInformation("Validating File extension and signature...");
         ValidateFile(File);
 
         // Add file typr validation
         string name = Guid.NewGuid().ToString() + $"{extension}";
 
         // Initialize the client
-        _logger.LogDebug("Creating Azure Blob Container Client...");
+        _logger.LogInformation("Creating Azure Blob Container Client...");
         BlobContainerClient containerClient = new BlobContainerClient(connectionString, containerName);
 
         // Make the container if it does not exist
@@ -47,7 +47,7 @@ public class FileStorageService : IFileStorageService
         await blobClient.DeleteIfExistsAsync();
 
         // Upload the new Blob
-        _logger.LogDebug("Uploading file...");
+        _logger.LogInformation("Uploading file {file}", File.FileName);
         using var fileStream = File.OpenReadStream();
         await blobClient.UploadAsync(
             fileStream,
@@ -57,11 +57,12 @@ public class FileStorageService : IFileStorageService
         return blobClient.Uri.ToString();
     }
 
-    private static void ValidateFile(IFormFile file)
+    private void ValidateFile(IFormFile file)
     {
         string extension = Path.GetExtension(file.FileName);
         if(!allowedExtension.Contains(extension))
         {
+            _logger.LogWarning("File extension {file} is wrong", extension);
             throw new BadRequestException("Invalid file extension");
         }
 
@@ -80,6 +81,7 @@ public class FileStorageService : IFileStorageService
 
         if(!isValid)
         {
+            _logger.LogWarning("{File}'s contents do not match the extension", file.FileName);
             throw new BadRequestException("File contents do not match file extension");
         }
     }
@@ -99,15 +101,17 @@ public class FileStorageService : IFileStorageService
 
     public async Task<ProductImageResponseDto> AddImage(ProductImageRequestDto productImageRequestDto, Guid id)
     {
-        _logger.LogDebug("Getting Product with ID: {id}...", id);
+        _logger.LogInformation("Getting Product with ID: {id}", id);
 
         if(productImageRequestDto.File == null || productImageRequestDto.File.Length == 0)
         {
+            _logger.LogWarning("No file uploaded/detected");
             throw new BadRequestException("No File Uploaded");
         }
 
         if (productImageRequestDto.File.Length > MaxFileSize)
         {
+            _logger.LogWarning("Invalid filesize");
             throw new BadRequestException($"File size exceeds maximum allowed size of " +
                         $"{MaxFileSize / 1024 / 1024} MB");
         }
@@ -115,11 +119,11 @@ public class FileStorageService : IFileStorageService
         Product product = await _productRepository.GetProductById(id) ?? throw new NotFoundException("Product", id);
 
         // get the Image URI from the helper
-        _logger.LogDebug("Obtaining public URL for file...");
+        _logger.LogInformation("Obtaining public URL for {file}", productImageRequestDto.File.FileName);
         string imageUrl = await UploadToAzurite(productImageRequestDto.File);
 
         // add image to the product
-        _logger.LogDebug("Attaching public URL to product...");
+        _logger.LogInformation("Attaching public URL to product");
         Guid imageId = Guid.NewGuid();
         await _productRepository.AddImage(imageId, imageUrl, product.Id);
 
@@ -135,7 +139,7 @@ public class FileStorageService : IFileStorageService
 
     public async Task<List<ProductImageResponseDto>> GetAllImages(Guid id)
     {
-        _logger.LogDebug("Getting...");
+        _logger.LogDebug("Getting All Images for {ProductId}", id);
         List<ProductImage> response = await _productRepository.GetAllImages(id);
 
         // Map to DTO

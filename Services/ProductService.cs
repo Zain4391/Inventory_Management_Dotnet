@@ -29,11 +29,11 @@ public class ProductService : IProductService
             Price = productRequestDto.Price
         };
 
-        _logger.LogDebug("Creating Product...");
+        _logger.LogInformation("Creating product with the Data: {data}", productRequestDto);
 
         Product response = await _productRepository.CreateProduct(newProduct);
 
-        _logger.LogDebug("Created Product with ID: {id}...", response.Id);
+        _logger.LogInformation("Created Product with ID: {id}", response.Id);
 
         ProductResponseDto dto = new()
         {
@@ -50,7 +50,7 @@ public class ProductService : IProductService
 
     public async Task<List<ProductResponseDto>> GetAllProducts ()
     {
-        _logger.LogDebug($"Getting Products...");
+        _logger.LogInformation($"Getting Products");
 
         List<Product> products = await _productRepository.GetAllProducts();
 
@@ -77,9 +77,15 @@ public class ProductService : IProductService
 
     public async Task<ProductResponseDto> GetProductById (Guid id)
     {
-        _logger.LogDebug("Getting Product with ID: {id}...", id);
+        _logger.LogInformation("Getting Product with ID: {id}", id);
 
-        Product product = await _productRepository.GetProductById(id) ?? throw new NotFoundException("Product", id);
+        Product? product = await _productRepository.GetProductById(id);
+
+        if(product is null)
+        {
+            _logger.LogWarning("Product with {id} was not found", id);
+           throw new NotFoundException("Product", id);
+        }
 
         ProductResponseDto response = new()
         {
