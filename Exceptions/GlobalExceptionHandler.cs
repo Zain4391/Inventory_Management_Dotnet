@@ -35,6 +35,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             Instance = httpContext.Request.Path
         };
 
+        httpContext.Response.StatusCode = statusCode;
+
         if(exception is ValidationException validationEx)
         {
             problemDetails.Extensions["errors"] = validationEx.Errors;
