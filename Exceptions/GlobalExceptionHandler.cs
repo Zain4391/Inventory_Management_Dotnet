@@ -35,6 +35,11 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             Instance = httpContext.Request.Path
         };
 
+        if(exception is ValidationException validationEx)
+        {
+            problemDetails.Extensions["errors"] = validationEx.Errors;
+        }
+
         // Write the JSON response
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
