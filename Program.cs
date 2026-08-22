@@ -54,13 +54,13 @@ try
         app.MapOpenApi();
     }
 
+    app.UseExceptionHandler();
+
     app.UseHttpsRedirection();
 
     app.UseAuthorization();
 
     app.UseSerilogRequestLogging();
-
-    app.UseExceptionHandler();
 
     app.MapControllers();
 
