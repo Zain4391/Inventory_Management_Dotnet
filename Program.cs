@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using Inventory_Management_dotnet.Data;
 using Inventory_Management_dotnet.Exceptions;
@@ -6,7 +7,10 @@ using Inventory_Management_dotnet.Repositories;
 using Inventory_Management_dotnet.Repositories.Interfaces;
 using Inventory_Management_dotnet.Services;
 using Inventory_Management_dotnet.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -25,6 +29,10 @@ try
         .BindConfiguration(BlobStorageOptions.SectionName)
         .ValidateDataAnnotations()
         .ValidateOnStart();
+    builder.Services.AddOptions<JwtSettingsOptions>()
+        .BindConfiguration(JwtSettingsOptions.SectionName)
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
     builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
         builder.Configuration.GetConnectionString("DbConnectionString")
     ));
@@ -40,6 +48,38 @@ try
         }
     );
 
+    var jwtSettings = builder.Configuration
+                        .GetSection(JwtSettingsOptions.SectionName)
+                        .Get<JwtSettingsOptions>()
+                        ?? throw new InvalidOperationException(
+                            "JWT settings are not configured.");
+
+    builder.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            // keep claims names as defined, no overwriting
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                ClockSkew = TimeSpan.Zero,
+                NameClaimType = JwtRegisteredClaimNames.Name,
+                RoleClaimType = "role"
+            };
+        });
+
+    builder.Services.AddAuthorization();
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -58,11 +98,12 @@ try
 
     app.UseHttpsRedirection();
 
-    app.UseAuthorization();
-
     app.UseSerilogRequestLogging();
 
     app.MapControllers();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.Run();
 
