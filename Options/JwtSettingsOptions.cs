@@ -14,4 +14,6 @@ public class JwtSettingsOptions
     [Required(AllowEmptyStrings = false)]
     public string Audience {get; set;} = string.Empty;
     public int ExpiryInMinutes {get; set;}
+
+    public int RefreshTokenExpiryInDays {get; set;}
 }

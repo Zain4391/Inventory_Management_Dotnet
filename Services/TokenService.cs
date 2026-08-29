@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Inventory_Management_dotnet.Models.Entities;
 using Inventory_Management_dotnet.Options;
@@ -50,5 +51,21 @@ public class TokenService : ITokenService
         var token = handler.CreateToken(descriptor);
 
         return (token, expiresAt);
+    }
+
+    // Refresh tokens are just random strings
+    // They're not JWTs
+    public string CreateRefreshToken()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+    }
+
+    public string HashRefreshToken(string token)
+    {
+        var bytes = SHA256.HashData(
+            Encoding.UTF8.GetBytes(token)
+        );
+
+        return Convert.ToBase64String(bytes);
     }
 }

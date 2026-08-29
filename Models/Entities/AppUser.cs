@@ -15,7 +15,9 @@ public class AppUser : IdentityUser<Guid>
 
     public GENDER Gender {get; set;}
 
-    public string? ProfileImageUrl {get; set;}
+    public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
 
     public ICollection<Order> Orders {get; set;} = [];
+
+    public ICollection<RefreshToken> RefreshTokens {get; set;} = [];
 }

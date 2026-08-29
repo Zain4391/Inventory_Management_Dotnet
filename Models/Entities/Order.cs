@@ -26,5 +26,5 @@ public class Order
     public STATUS Order_status {get; set;}
 
     //For Reference
-    public User User {get; set;} = null!;
+    public AppUser User {get; set;} = null!;
 }
