@@ -107,6 +107,9 @@ public class AuthService : IAuthService
     public async Task<RefreshTokenResponseDto> Refresh(RefreshTokenRequestDto refreshTokenRequestDto)
     {
         _logger.LogInformation("Revoking the Token");
+
+        // Hash the token as the refresh token sent is plain text one
+        refreshTokenRequestDto.RefreshToken = _tokenService.HashRefreshToken(refreshTokenRequestDto.RefreshToken);
         RefreshToken? token = await _refreshTokenRepository.RevokeRefreshToken(refreshTokenRequestDto);
 
         if(token is null)
