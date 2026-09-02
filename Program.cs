@@ -2,12 +2,14 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Inventory_Management_dotnet.Data;
 using Inventory_Management_dotnet.Exceptions;
+using Inventory_Management_dotnet.Models.Entities;
 using Inventory_Management_dotnet.Options;
 using Inventory_Management_dotnet.Repositories;
 using Inventory_Management_dotnet.Repositories.Interfaces;
 using Inventory_Management_dotnet.Services;
 using Inventory_Management_dotnet.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -21,10 +23,17 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    // Add repositories to the container.
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
+    builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+    builder.Services.AddScoped<IUserRpository, UserRepository>();
+
     // Add services to the container.
     builder.Services.AddScoped<IFileStorageService, FileStorageService>();
     builder.Services.AddScoped<IProductService, ProductService>();
-    builder.Services.AddScoped<IProductRepository, ProductRepository>();
+    builder.Services.AddScoped<ITokenService, TokenService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
+
     builder.Services.AddOptions<BlobStorageOptions>()
         .BindConfiguration(BlobStorageOptions.SectionName)
         .ValidateDataAnnotations()
@@ -36,6 +45,9 @@ try
     builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
         builder.Configuration.GetConnectionString("DbConnectionString")
     ));
+    builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
     builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services));
@@ -100,16 +112,24 @@ try
 
     app.UseSerilogRequestLogging();
 
-    app.MapControllers();
-
+    
     app.UseAuthentication();
     app.UseAuthorization();
+    
+    app.MapControllers();
+
 
     app.Run();
 
-} catch (Exception ex)
+} catch(HostAbortedException)
+{
+    // EF Core tooling aborts the host after reading design-time services.
+    Log.Information("EF core has read design time services");
+} 
+catch (Exception ex)
 {
     Log.Fatal(ex, "Server terminated unexpectedly!");
+    Console.WriteLine(ex.Message);
 } finally
 {
     Log.CloseAndFlush();

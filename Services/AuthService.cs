@@ -8,6 +8,12 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Inventory_Management_dotnet.Services;
 
+/*
+
+TEMP-TODO: Add an Admin SignUp method to seed admins in the Database
+Then, test it's functionality. After testing, DELETE the CODE!
+
+*/
 public class AuthService : IAuthService
 {
     // User manager has the creation logic and is an abstraction already
@@ -52,6 +58,48 @@ public class AuthService : IAuthService
 
         // assign default role of Staff
         await _userManager.AddToRoleAsync(user, Roles.Staff);
+
+        // Map tp response dto and return
+        SignUpResponseDto dto = new SignUpResponseDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email!,
+            Age = user.Age,
+            Gender = user.Gender,
+            CreatedAt = user.CreatedAt
+        };
+
+        return dto;
+    }
+
+    // Delete this after making admins!!
+    public async Task<SignUpResponseDto> SignUpAdmin(SignUpRequestDto signUpRequestDto)
+    {
+        Guid id = Guid.NewGuid();
+
+        _logger.LogInformation("Creating User with ID: {}", id);
+
+        AppUser user = new AppUser
+        {
+            Id = id,
+            Name = signUpRequestDto.Name,
+            Age = signUpRequestDto.Age,
+            Gender = signUpRequestDto.Gender,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _logger.LogInformation("Saving user {} to Database", id);
+
+        var response = await _userManager.CreateAsync(user, signUpRequestDto.Password);
+
+        if(!response.Succeeded)
+        {
+            _logger.LogError("Invalid arguments or fields for user {}", id);
+            throw new BadRequestException("Invalid request arguments");
+        }
+
+        await _userManager.AddToRoleAsync(user, Roles.Admin);
 
         // Map tp response dto and return
         SignUpResponseDto dto = new SignUpResponseDto

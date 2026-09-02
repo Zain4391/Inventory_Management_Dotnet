@@ -11,7 +11,7 @@ namespace Inventory_Management_dotnet.Data;
 
     This is being done so that an established pattern is carried forward.
 */
-public class AppDbContext(DbContextOptions dbContextOptions) : 
+public class AppDbContext(DbContextOptions<AppDbContext> dbContextOptions) : 
     IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>(dbContextOptions)
 {
     // DB Sets = Tables in the Data Base

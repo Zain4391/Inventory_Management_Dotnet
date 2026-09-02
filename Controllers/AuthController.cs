@@ -5,6 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Management_dotnet.Controllers;
 
+/*
+
+TEMP-TODO: Add a temporary admin creation endpoint
+which calls the Admin creation method. Test it and then remove it!
+
+*/
+
 [Route("api/auth")]
 [ApiController]
 public class AuthController : ControllerBase
@@ -14,6 +21,13 @@ public class AuthController : ControllerBase
     public AuthController(IAuthService authService)
     {
         _authService = authService;
+    }
+
+    [HttpPost("admin/sign-up")]
+    public async Task<ActionResult<SignUpResponseDto>> AdminSignUp(SignUpRequestDto signUpRequestDto)
+    {
+        var response = await _authService.SignUpAdmin(signUpRequestDto);
+        return Created($"/admin/sign-up/{response.Id}", response);
     }
 
     [HttpPost("sign-up")]
