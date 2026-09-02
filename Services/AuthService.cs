@@ -43,7 +43,9 @@ public class AuthService : IAuthService
             Name = signUpRequestDto.Name,
             Age = signUpRequestDto.Age,
             Gender = signUpRequestDto.Gender,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Email = signUpRequestDto.Email,
+            UserName = signUpRequestDto.Email
         };
 
         _logger.LogInformation("Saving user {} to Database", id);
@@ -64,7 +66,7 @@ public class AuthService : IAuthService
         {
             Id = user.Id,
             Name = user.Name,
-            Email = user.Email!,
+            Email = user.Email,
             Age = user.Age,
             Gender = user.Gender,
             CreatedAt = user.CreatedAt
@@ -86,7 +88,9 @@ public class AuthService : IAuthService
             Name = signUpRequestDto.Name,
             Age = signUpRequestDto.Age,
             Gender = signUpRequestDto.Gender,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Email = signUpRequestDto.Email,
+            UserName = signUpRequestDto.Email
         };
 
         _logger.LogInformation("Saving user {} to Database", id);
@@ -106,7 +110,7 @@ public class AuthService : IAuthService
         {
             Id = user.Id,
             Name = user.Name,
-            Email = user.Email!,
+            Email = user.Email,
             Age = user.Age,
             Gender = user.Gender,
             CreatedAt = user.CreatedAt
