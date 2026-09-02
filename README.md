@@ -31,7 +31,7 @@ Inventory_Management_dotnet/
 │   ├── DTOs/
 │   └── Entities/
 ├── Options/
-│   └── BlobStorageOptions.cs
+├── Exceptions/
 ├── Repositories/
 ├── Services/
 ├── appsettings.json
@@ -268,11 +268,12 @@ Images are uploaded to Azure Blob Storage. The blob container is created automat
 
 ## Development Notes
 
-The application registers:
+Run the migrations from master/main branch only!
 
-- `IProductRepository` as a singleton
-- `IFileStorageService` as a singleton
-- `IProductService` as scoped
+```bash
+dotnet ef migrations add <name>
+dotnet ef database update
+```
 
 JSON enum values are serialized as strings, so API requests should use category names such as `"Electronics"` or `"VideoGames"`.
 
