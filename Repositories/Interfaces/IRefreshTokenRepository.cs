@@ -10,4 +10,6 @@ public interface IRefreshTokenRepository
 
     // Will be used by the Login Method
     Task<RefreshToken> SaveRefreshToken(string TokenHash, Guid userId);
+
+    Task RevokeAllTokens(Guid userId);
 }

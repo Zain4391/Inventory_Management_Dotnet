@@ -178,6 +178,16 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Token must be provided");
         }
 
+        // If a token is null and is being sent again then it means 
+        // the token was acquired by am umauthorized party, thus revoke all tokens for the user
+        bool isActive = token.RevokedAt is null && DateTime.UtcNow < token.ExpiresAt;
+        if(!isActive)
+        {
+            await _refreshTokenRepository.RevokeAllTokens(refreshTokenRequestDto.UserId);
+            _logger.LogInformation("Revoking tokens");
+            throw new UnauthorizedAccessException("Token cannot be resued once revoked");
+        }
+
         // Generate the new token
         string refreshToken = _tokenService.CreateRefreshToken();
 
