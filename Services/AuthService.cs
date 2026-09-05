@@ -132,6 +132,14 @@ public class AuthService : IAuthService
             throw new NotFoundException("User with provided email not found", logInRequestDto.Email);
         }
 
+        // check password for the user
+        bool isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, logInRequestDto.Password);
+        if(!isPasswordValid)
+        {
+            _logger.LogWarning("Invalid password attempt for {Email}", logInRequestDto.Email);
+            throw new UnauthorizedException("Invalid credentials");
+        }
+
         // Generate now Access and Refresh Tokens
         _logger.LogInformation("User found, generating tokens");
         var roles = await _userManager.GetRolesAsync(existingUser);
