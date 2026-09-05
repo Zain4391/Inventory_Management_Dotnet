@@ -41,13 +41,13 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<LogInResponseDto>> Login(LogInRequestDto logInRequestDto)
     {
         var response = await _authService.LogIn(logInRequestDto);
-        return Created($"/log-in/{response}", response);
+        return Ok(response);
     }
 
     [HttpPost("refresh")]
     public async Task<ActionResult<RefreshTokenResponseDto>> Refresh(RefreshTokenRequestDto refreshTokenRequestDto)
     {
         var response = await _authService.Refresh(refreshTokenRequestDto);
-        return Created($"/refresh/{response}", response);
+        return Ok(response);
     }
 }
