@@ -12,4 +12,6 @@ public interface IRefreshTokenRepository
     Task<RefreshToken> SaveRefreshToken(string TokenHash, Guid userId);
 
     Task RevokeAllTokens(Guid userId);
+
+    Task<RefreshToken?> GetRefreshToken(string tokenHash);
 }

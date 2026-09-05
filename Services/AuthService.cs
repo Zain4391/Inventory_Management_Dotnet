@@ -164,14 +164,9 @@ public class AuthService : IAuthService
 
     }
 
-    public async Task<RefreshTokenResponseDto> Refresh(RefreshTokenRequestDto refreshTokenRequestDto)
+    private async Task RevokeAllTokens(RefreshTokenRequestDto refreshTokenRequestDto)
     {
-        _logger.LogInformation("Revoking the Token");
-
-        // Hash the token as the refresh token sent is plain text one
-        refreshTokenRequestDto.RefreshToken = _tokenService.HashRefreshToken(refreshTokenRequestDto.RefreshToken);
-        RefreshToken? token = await _refreshTokenRepository.RevokeRefreshToken(refreshTokenRequestDto);
-
+        var token = await _refreshTokenRepository.GetRefreshToken(refreshTokenRequestDto.RefreshToken);
         if(token is null)
         {
             _logger.LogError("Token not found");
@@ -186,6 +181,24 @@ public class AuthService : IAuthService
             await _refreshTokenRepository.RevokeAllTokens(refreshTokenRequestDto.UserId);
             _logger.LogInformation("Revoking tokens");
             throw new UnauthorizedAccessException("Token cannot be resued once revoked");
+        }
+    }
+
+    public async Task<RefreshTokenResponseDto> Refresh(RefreshTokenRequestDto refreshTokenRequestDto)
+    {
+        _logger.LogInformation("Revoking the Token");
+
+        // Hash the token as the refresh token sent is plain text one
+        refreshTokenRequestDto.RefreshToken = _tokenService.HashRefreshToken(refreshTokenRequestDto.RefreshToken);
+
+        // Perform the token re-play check and revoke the tokens
+        await RevokeAllTokens(refreshTokenRequestDto);
+        RefreshToken? token = await _refreshTokenRepository.RevokeRefreshToken(refreshTokenRequestDto);
+
+        if(token is null)
+        {
+            _logger.LogError("Token not found");
+            throw new UnauthorizedException("Token must be provided");
         }
 
         // Generate the new token

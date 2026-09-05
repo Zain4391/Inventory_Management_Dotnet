@@ -69,4 +69,17 @@ public class RefreshTokenRepository : IRefreshTokenRepository
 
         await _tokenContext.SaveChangesAsync();
     }
+
+    public async Task<RefreshToken?> GetRefreshToken(string tokenHash)
+    {
+        RefreshToken? existingToken = await _tokenContext.RefreshTokens.Include(rt => rt.User)
+                .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
+
+        if(existingToken is null)
+        {
+            return null;
+        }
+
+        return existingToken;
+    }
 }
