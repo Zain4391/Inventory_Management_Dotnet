@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inventory_Management_dotnet.Repositories;
 
-public class UserRepository : IUserRpository
+public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _userContext;
 

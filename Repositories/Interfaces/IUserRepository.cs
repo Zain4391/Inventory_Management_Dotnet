@@ -8,7 +8,7 @@ This abstraction will contain methods specific to our usecase
 Other methods are already abstracted by User-Manager
 
 */
-public interface IUserRpository
+public interface IUserRepository
 {
     Task<List<AppUser>> GetAllUsers();
 
