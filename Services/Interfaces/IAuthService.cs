@@ -8,9 +8,6 @@ public interface IAuthService
 {
     Task<SignUpResponseDto> SignUp(SignUpRequestDto signUpRequestDto);
 
-    // Delete this after creating admins
-    Task<SignUpResponseDto> SignUpAdmin(SignUpRequestDto signUpRequestDto);
-
     Task<LogInResponseDto> LogIn(LogInRequestDto logInRequestDto);
 
     Task<RefreshTokenResponseDto> Refresh(RefreshTokenRequestDto refreshTokenRequestDto);
