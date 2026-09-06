@@ -44,6 +44,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         RefreshToken refreshToken = new RefreshToken
         {
             Id = Guid.NewGuid(),
+            UserId = userId,
             TokenHash = TokenHash,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.Value.RefreshTokenExpiryInDays)
