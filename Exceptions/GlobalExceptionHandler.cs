@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Serilog;
 
 namespace Inventory_Management_dotnet.Exceptions;
 public sealed class GlobalExceptionHandler : IExceptionHandler
@@ -18,14 +19,23 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         CancellationToken cancellationToken
     )
     {
-        _logger.LogError(exception, "An unhandled exception occured: {Message}", exception.Message);
-
+        if (exception is AppException)
+        {
+            _logger.LogWarning(exception, "Handled exception : {Message}", exception.Message);
+        } else
+        {
+            _logger.LogError(exception, "An unhandled exception occured: {Message}", exception.Message);
+        }
         // Map Exceptions' titles and status codes
         var (statusCode, title) = exception switch
         {
             AppException appEx => ((int)appEx.statusCode, ReasonPhrases.GetReasonPhrase((int)appEx.statusCode)),
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
         };
+
+        string? traceId = httpContext.TraceIdentifier;
+
+        _logger.LogError(exception, "Unhandled exception [{TraceId}]: {Message}", traceId, exception.Message);
 
         var problemDetails = new ProblemDetails
         {
@@ -35,6 +45,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             Instance = httpContext.Request.Path
         };
 
+        problemDetails.Extensions["traceId"] = traceId;
         httpContext.Response.StatusCode = statusCode;
 
         if(exception is ValidationException validationEx)
