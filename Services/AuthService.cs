@@ -54,7 +54,8 @@ public class AuthService : IAuthService
 
         if(!response.Succeeded)
         {
-            _logger.LogError("Invalid arguments or fields for user {}", id);
+            var errors = string.Join("; ", response.Errors.Select(e => e.Description));
+            _logger.LogError("Invalid arguments or fields for user {id} with errors {errors}", id, errors);
             throw new BadRequestException("Invalid request arguments");
         }
 
