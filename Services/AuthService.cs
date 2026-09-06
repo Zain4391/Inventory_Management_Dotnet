@@ -35,7 +35,7 @@ public class AuthService : IAuthService
     {
         Guid id = Guid.NewGuid();
 
-        _logger.LogInformation("Creating User with ID: {}", id);
+        _logger.LogInformation("Creating User with ID: {id}", id);
 
         AppUser user = new AppUser
         {
@@ -48,7 +48,7 @@ public class AuthService : IAuthService
             UserName = signUpRequestDto.Email
         };
 
-        _logger.LogInformation("Saving user {} to Database", id);
+        _logger.LogInformation("Saving user {id} to Database", id);
 
         var response = await _userManager.CreateAsync(user, signUpRequestDto.Password);
 
@@ -81,7 +81,7 @@ public class AuthService : IAuthService
     {
         Guid id = Guid.NewGuid();
 
-        _logger.LogInformation("Creating User with ID: {}", id);
+        _logger.LogInformation("Creating User with ID: {id}", id);
 
         AppUser user = new AppUser
         {
@@ -94,13 +94,13 @@ public class AuthService : IAuthService
             UserName = signUpRequestDto.Email
         };
 
-        _logger.LogInformation("Saving user {} to Database", id);
+        _logger.LogInformation("Saving user {id} to Database", id);
 
         var response = await _userManager.CreateAsync(user, signUpRequestDto.Password);
 
         if(!response.Succeeded)
         {
-            _logger.LogError("Invalid arguments or fields for user {}", id);
+            _logger.LogError("Invalid arguments or fields for user {id}", id);
             throw new BadRequestException("Invalid request arguments");
         }
 
@@ -122,14 +122,14 @@ public class AuthService : IAuthService
 
     public async Task<LogInResponseDto> LogIn(LogInRequestDto logInRequestDto)
     {
-        _logger.LogInformation("Finding user with email {}", logInRequestDto.Email);
+        _logger.LogInformation("Finding user with email {Email}", logInRequestDto.Email);
         
         // Check if user exists, if not throw bad request exception
         AppUser? existingUser = await _userManager.FindByEmailAsync(logInRequestDto.Email);
 
         if(existingUser is null)
         {
-            _logger.LogError("User with Email {} not found", logInRequestDto.Email);
+            _logger.LogError("User with Email: {Email} not found", logInRequestDto.Email);
             throw new NotFoundException("User with provided email not found", logInRequestDto.Email);
         }
 
