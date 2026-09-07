@@ -89,10 +89,27 @@ try
                 NameClaimType = JwtRegisteredClaimNames.Name,
                 RoleClaimType = "role"
             };
+
+            // Redirect middleware to find access_token in the cookie
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    // get the access_token
+                    if(context.Request.Cookies.TryGetValue("access_token", out var token))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
+
         });
 
     builder.Services.AddAuthorization();
     builder.Services.AddProblemDetails();
+    builder.Services.AddHttpContextAccessor();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
