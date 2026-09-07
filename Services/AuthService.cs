@@ -171,7 +171,11 @@ public class AuthService : IAuthService
         if(!isActive)
         {
             await _refreshTokenRepository.RevokeAllTokens(refreshTokenRequestDto.UserId);
+            
+            // Clean cookie
             RemoveRefreshTokenFromCookie();
+            RemoveAccessTokenFromCookie();
+            
             _logger.LogInformation("Revoking tokens");
             throw new UnauthorizedException("Token cannot be resued once revoked");
         }
