@@ -10,6 +10,12 @@ using Microsoft.Extensions.Options;
 
 namespace Inventory_Management_dotnet.Services;
 
+/*
+
+TODO: Refactor to add a separate cookie service, inject it in the controller 
+This makes the service easy to test
+
+*/
 public class AuthService : IAuthService
 {
     private void SetTokenCookies(string accessToken, string refreshToken)
@@ -214,7 +220,8 @@ public class AuthService : IAuthService
 
         RefreshTokenResponseDto dto = new RefreshTokenResponseDto
         {
-            RefreshToken = refreshToken
+            RefreshToken = refreshToken,
+            AccessToken = accessToken
         };
 
         return dto;

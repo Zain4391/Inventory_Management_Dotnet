@@ -5,4 +5,5 @@ namespace Inventory_Management_dotnet.Models.DTOs.Response;
 public class RefreshTokenResponseDto
 {
     public required string RefreshToken {get; set;}
+    public required string AccessToken {get; set;}
 }
