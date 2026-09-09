@@ -2,73 +2,31 @@ using Inventory_Management_dotnet.Exceptions;
 using Inventory_Management_dotnet.Models.DTOs.Request;
 using Inventory_Management_dotnet.Models.DTOs.Response;
 using Inventory_Management_dotnet.Models.Entities;
-using Inventory_Management_dotnet.Options;
 using Inventory_Management_dotnet.Repositories.Interfaces;
 using Inventory_Management_dotnet.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 
 namespace Inventory_Management_dotnet.Services;
 
-/*
-
-TODO: Refactor to add a separate cookie service, inject it in the controller 
-This makes the service easy to test
-
-*/
 public class AuthService : IAuthService
 {
-    private void SetTokenCookies(string accessToken, string refreshToken)
-    {
-        var jwtcookieOptions = new CookieOptions
-        {
-            HttpOnly = true, // XSS prevention
-            Secure = true, // HHTPS only
-            SameSite = SameSiteMode.Strict, // CSRF mitigation
-            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.Value.ExpiryInMinutes)
-        };
-
-        var refreshTokencookieOptions = new CookieOptions
-        {
-            HttpOnly = true, // XSS prevention
-            Secure = true, // HHTPS only
-            SameSite = SameSiteMode.Strict, // CSRF mitigation
-            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.Value.RefreshTokenExpiryInDays)
-        };
-
-        // append cookies
-        var response = _httpContextAccessor.HttpContext!.Response;
-        response.Cookies.Append("access_token", accessToken, jwtcookieOptions);
-        response.Cookies.Append("refresh_token", refreshToken, refreshTokencookieOptions);
-    }
-
-    private void RemoveRefreshTokenFromCookie()
-    {
-        _httpContextAccessor.HttpContext!.Response.Cookies.Delete("refresh_token");
-    }
-
-    private void RemoveAccessTokenFromCookie()
-    {
-        _httpContextAccessor.HttpContext!.Response.Cookies.Delete("access_token");
-    }
     // User manager has the creation logic and is an abstraction already
     public readonly UserManager<AppUser> _userManager;
     public readonly ITokenService _tokenService;
     public readonly ILogger<IAuthService> _logger;
     public readonly IRefreshTokenRepository _refreshTokenRepository;
-    public readonly IOptions<JwtSettingsOptions> _jwtSettings;
-    public readonly IHttpContextAccessor _httpContextAccessor;
+
+    public readonly ICookieService _cookieService;
 
     public AuthService(UserManager<AppUser> userManager, ITokenService tokenService, 
     ILogger<IAuthService> logger, IRefreshTokenRepository refreshTokenRepository, 
-    IOptions<JwtSettingsOptions> jwtSettings, IHttpContextAccessor httpContextAccessor)
+    ICookieService cookieService)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _logger = logger;
         _refreshTokenRepository = refreshTokenRepository;
-        _jwtSettings = jwtSettings;
-        _httpContextAccessor = httpContextAccessor;
+        _cookieService = cookieService;
     }
 
     public async Task<SignUpResponseDto> SignUp(SignUpRequestDto signUpRequestDto)
@@ -150,7 +108,7 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.SaveRefreshToken(tokenHash, existingUser.Id);
 
         // add to cookies
-        SetTokenCookies(token, refreshToken);
+        _cookieService.SetTokenCookies(token, refreshToken);
 
         LogInResponseDto dto = new LogInResponseDto
         {
@@ -179,8 +137,8 @@ public class AuthService : IAuthService
             await _refreshTokenRepository.RevokeAllTokens(refreshTokenRequestDto.UserId);
             
             // Clean cookie
-            RemoveRefreshTokenFromCookie();
-            RemoveAccessTokenFromCookie();
+            _cookieService.RemoveRefreshTokenFromCookie();
+            _cookieService.RemoveAccessTokenFromCookie();
             
             _logger.LogInformation("Revoking tokens");
             throw new UnauthorizedException("Token cannot be resued once revoked");
@@ -216,7 +174,7 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.SaveRefreshToken(tokenHash, token.User.Id);
 
         // Set Cookies
-        SetTokenCookies(accessToken, refreshToken);
+        _cookieService.SetTokenCookies(accessToken, refreshToken);
 
         RefreshTokenResponseDto dto = new RefreshTokenResponseDto
         {
