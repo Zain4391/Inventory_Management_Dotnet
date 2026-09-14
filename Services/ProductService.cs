@@ -75,9 +75,10 @@ public class ProductService : IProductService
                 Category = p.Category,
                 Quantity = p.Quantity,
                 Price = p.Price,
-                ProductImages = p.Images.Select(pi => new ProductImageResponseDto
+                ProductImages = (ICollection<ProductImageResponseDto>)p.Images.Select(pi => new ProductImageResponseDto
                 {
-                    
+                    Id = pi.Id,
+                    ImageUrl = pi.ImageUrl
                 })
             }),
             Page = products.Page,
