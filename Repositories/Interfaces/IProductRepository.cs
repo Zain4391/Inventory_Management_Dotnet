@@ -1,3 +1,4 @@
+using Inventory_Management_dotnet.Common;
 using Inventory_Management_dotnet.Models.Entities;
 
 namespace Inventory_Management_dotnet.Repositories.Interfaces;
@@ -6,7 +7,7 @@ public interface IProductRepository
 {
     Task<Product> CreateProduct(Product productRequestDto);
 
-    Task<List<Product>> GetAllProducts();
+    Task<PageResult<Product>> GetAllProducts(ProductQueryRequest pageQueryRequest);
 
     Task<Product?> GetProductById(Guid id);
 

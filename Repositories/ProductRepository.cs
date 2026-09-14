@@ -1,3 +1,4 @@
+using Inventory_Management_dotnet.Common;
 using Inventory_Management_dotnet.Data;
 using Inventory_Management_dotnet.Models.Entities;
 using Inventory_Management_dotnet.Repositories.Interfaces;
@@ -34,10 +35,68 @@ public class ProductRepository : IProductRepository
         return newProduct;
     }
 
-    public async Task<List<Product>> GetAllProducts()
+    public async Task<PageResult<Product>> GetAllProducts(ProductQueryRequest productQueryRequest)
     {
-        List<Product> products = await _productContext.Products.Include(p => p.Images).ToListAsync();
-        return products;
+        IQueryable<Product> query = _productContext.Products.AsNoTracking();
+
+        // perform search
+        if(!string.IsNullOrEmpty(productQueryRequest.Search))
+        {
+            query = query.Where(p => p.Name == productQueryRequest.Search 
+                            || p.Description!.Contains(productQueryRequest.Search));
+        }
+
+        if(productQueryRequest.Category.HasValue)
+        {
+            query = query.Where(p => p.Category == productQueryRequest.Category.Value);
+        }
+
+        // Perform min and max filtering
+        if(productQueryRequest.MinPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= productQueryRequest.MinPrice.Value);
+        }
+
+        if(productQueryRequest.MaxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= productQueryRequest.MaxPrice.Value);
+        }
+
+        query = productQueryRequest.SortBy?.ToLower() switch
+        {
+            "price" => productQueryRequest.SortDescending
+                ? query.OrderByDescending(p => p.Price)
+                : query.OrderBy(p => p.Price),
+
+            "quantity" => productQueryRequest.SortDescending
+                ? query.OrderByDescending(p => p.Quantity)
+                : query.OrderBy(p => p.Quantity),
+
+            "createdat" => productQueryRequest.SortDescending
+                ? query.OrderByDescending(p => p.CreatedAt)
+                : query.OrderBy(p => p.CreatedAt),
+
+            "name" => productQueryRequest.SortDescending
+                ? query.OrderByDescending(p => p.Name)
+                : query.OrderBy(p => p.Name),
+
+            _ => query.OrderBy(p => p.Name)
+        };
+
+        var totalCount = await query.CountAsync();
+        var products = await query.Skip((productQueryRequest.Page - 1) * productQueryRequest.PageSize)
+        .Take(productQueryRequest.PageSize)
+        .ToListAsync();
+
+        PageResult<Product> dto = new PageResult<Product>
+        {
+            Items = products,
+            Page = productQueryRequest.Page,
+            PageSize = productQueryRequest.PageSize,
+            TotalCount = totalCount
+        };
+
+        return dto;
     }
 
     public async Task<Product?> GetProductById(Guid id)

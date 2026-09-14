@@ -1,3 +1,4 @@
+using Inventory_Management_dotnet.Common;
 using Inventory_Management_dotnet.Exceptions;
 using Inventory_Management_dotnet.Models.DTOs.Request;
 using Inventory_Management_dotnet.Models.DTOs.Response;
@@ -48,31 +49,41 @@ public class ProductService : IProductService
         return dto;
     }
 
-    public async Task<List<ProductResponseDto>> GetAllProducts ()
+    public async Task<PageResult<ProductResponseDto>> GetAllProducts (ProductQueryRequest productQueryRequest)
     {
         _logger.LogInformation($"Getting Products");
 
-        List<Product> products = await _productRepository.GetAllProducts();
+        if(productQueryRequest.Page < 1)
+        {
+            throw new BadRequestException("Page cannot be negative");
+        }
 
-        List<ProductResponseDto> response = products
-            .Select(product => new ProductResponseDto
+        if(productQueryRequest.Page < 1 || productQueryRequest.PageSize > 100)
+        {
+            throw new BadRequestException("Page must be between 1 and 100");
+        }
+
+        PageResult<Product> products = await _productRepository.GetAllProducts(productQueryRequest);
+
+        return new PageResult<ProductResponseDto>
+        {
+            Items = products.Items.Select(p => new ProductResponseDto
             {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Category = product.Category,
-                Quantity = product.Quantity,
-                Price = product.Price,
-
-                ProductImages = product.Images.Select(image => new ProductImageResponseDto
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Category = p.Category,
+                Quantity = p.Quantity,
+                Price = p.Price,
+                ProductImages = p.Images.Select(pi => new ProductImageResponseDto
                 {
-                    Id = image.Id,
-                    ImageUrl = image.ImageUrl
-                }).ToList()
-            })
-            .ToList();
-
-        return response;
+                    
+                })
+            }),
+            Page = products.Page,
+            PageSize = products.PageSize,
+            TotalCount = products.TotalCount
+        };
     }
 
     public async Task<ProductResponseDto> GetProductById (Guid id)

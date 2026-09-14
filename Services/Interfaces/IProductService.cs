@@ -1,3 +1,4 @@
+using Inventory_Management_dotnet.Common;
 using Inventory_Management_dotnet.Models.DTOs.Request;
 using Inventory_Management_dotnet.Models.DTOs.Response;
 
@@ -7,7 +8,7 @@ public interface IProductService
 {
     Task<ProductResponseDto> CreateProduct(ProductRequestDto productRequestDto);
 
-    Task<List<ProductResponseDto>> GetAllProducts();
+    Task<PageResult<ProductResponseDto>> GetAllProducts(ProductQueryRequest productQueryRequest);
 
     Task<ProductResponseDto> GetProductById(Guid id);
 }
