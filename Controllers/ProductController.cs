@@ -1,6 +1,8 @@
 using Inventory_Management_dotnet.Models.DTOs.Request;
 using Inventory_Management_dotnet.Models.DTOs.Response;
+using Inventory_Management_dotnet.Models.Entities;
 using Inventory_Management_dotnet.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Management_dotnet.Controllers;
@@ -36,6 +38,7 @@ public class ProductController : ControllerBase
         return Ok(response);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     public async Task<ActionResult<ProductResponseDto>> CreateProduct([FromBody] ProductRequestDto productRequestDto)
     {
@@ -51,6 +54,7 @@ public class ProductController : ControllerBase
         );
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:guid}/images")]
     [RequestFormLimits(
         MultipartBodyLengthLimit = MaxFileSize,
