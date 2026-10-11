@@ -1,3 +1,4 @@
+using Inventory_Management_dotnet.Common;
 using Inventory_Management_dotnet.Models.DTOs.Request;
 using Inventory_Management_dotnet.Models.DTOs.Response;
 using Inventory_Management_dotnet.Models.Entities;
@@ -68,9 +69,9 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetAllProducts()
+    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetAllProducts(ProductQueryRequest productQueryRequest)
     {
-        return Ok(await _productService.GetAllProducts());
+        return Ok(await _productService.GetAllProducts(productQueryRequest));
     }
 
 }
