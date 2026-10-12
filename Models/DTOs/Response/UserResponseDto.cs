@@ -17,4 +17,5 @@ public class UserResponseDto
     public DateTime CreatedAt {get; set;}
 
     // TODO: Add ICollection<OrderResponseDto> here after making order service
+    public ICollection<OrderResponseDto> Orders {get; set;} = [];
 }

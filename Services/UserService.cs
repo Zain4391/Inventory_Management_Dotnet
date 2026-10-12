@@ -47,8 +47,17 @@ public class UserService : IUserService
                 Name = u.Name,
                 Email = u.Email!,
                 Gender = u.Gender,
-                CreatedAt = u.CreatedAt
-                // TODO: Add Orders mapping
+                CreatedAt = u.CreatedAt,
+                Orders = (ICollection<OrderResponseDto>)u.Orders.Select(o => new OrderResponseDto
+                {
+                    Id = o.Id,
+                    Total_items = o.Total_items,
+                    Total_price = o.Total_price,
+                    Delivery_address = o.Delivery_address,
+                    CreatedAt = o.CreatedAt,
+                    Delivery_date = o.Delivery_date,
+                    Order_status = o.Order_status
+                })
             }),
             Page = users.Page,
             PageSize = users.PageSize,
@@ -75,7 +84,6 @@ public class UserService : IUserService
           Name = user.Name,
           Email = user.Email!,
           CreatedAt = user.CreatedAt 
-          // TODO: Add Orders mapping  
         };
 
         return response;
