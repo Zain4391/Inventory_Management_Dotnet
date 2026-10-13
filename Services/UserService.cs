@@ -32,7 +32,7 @@ public class UserService : IUserService
             throw new BadRequestException("Page cannot be negative");
         }
 
-        if(userQueryRequest.Page < 1 || userQueryRequest.PageSize > 100)
+        if(userQueryRequest.PageSize < 1 || userQueryRequest.PageSize > 100)
         {
             _logger.LogError($"Invalid Page size");
             throw new BadRequestException("Page must be between 1 and 100");
@@ -83,6 +83,7 @@ public class UserService : IUserService
           Id = user.Id,
           Name = user.Name,
           Email = user.Email!,
+          Gender = user.Gender,
           CreatedAt = user.CreatedAt 
         };
 
@@ -113,7 +114,7 @@ public class UserService : IUserService
         if(updateUserResponseDto.Email != null)
         {
             _logger.LogInformation("Update user Email");
-            user.Email = updateUserResponseDto.Email;
+            await _userManager.SetEmailAsync(user, updateUserResponseDto.Email);
         }
 
         if(updateUserResponseDto.Gender.HasValue)
