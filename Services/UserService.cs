@@ -48,7 +48,7 @@ public class UserService : IUserService
                 Email = u.Email!,
                 Gender = u.Gender,
                 CreatedAt = u.CreatedAt,
-                Orders = (ICollection<OrderResponseDto>)u.Orders.Select(o => new OrderResponseDto
+                Orders = u.Orders.Select(o => new OrderResponseDto
                 {
                     Id = o.Id,
                     Total_items = o.Total_items,
@@ -57,11 +57,11 @@ public class UserService : IUserService
                     CreatedAt = o.CreatedAt,
                     Delivery_date = o.Delivery_date,
                     Order_status = o.Order_status
-                })
+                }).ToList()
             }),
             Page = users.Page,
             PageSize = users.PageSize,
-            TotalCount = users.TotalPages
+            TotalCount = users.TotalCount
         };
 
     }

@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
 
     public async Task<PageResult<AppUser>> GetAllUsers(UserQueryRequest userQueryRequest)
     {
-        IQueryable<AppUser> query = _userContext.Users.AsNoTracking();
+        IQueryable<AppUser> query = _userContext.Users.AsNoTracking().Include(u => u.Orders);
 
         if(!string.IsNullOrEmpty(userQueryRequest.Name))
         {
