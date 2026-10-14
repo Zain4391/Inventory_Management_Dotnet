@@ -37,7 +37,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<PageResult<Product>> GetAllProducts(ProductQueryRequest productQueryRequest)
     {
-        IQueryable<Product> query = _productContext.Products.AsNoTracking();
+        IQueryable<Product> query = _productContext.Products.AsNoTracking().Include(p => p.Images);
 
         // perform search
         if(!string.IsNullOrEmpty(productQueryRequest.Search))

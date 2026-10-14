@@ -55,11 +55,13 @@ public class ProductService : IProductService
 
         if(productQueryRequest.Page < 1)
         {
+            _logger.LogError($"Invalid Page Number");
             throw new BadRequestException("Page cannot be negative");
         }
 
-        if(productQueryRequest.Page < 1 || productQueryRequest.PageSize > 100)
+        if(productQueryRequest.PageSize < 1 || productQueryRequest.PageSize > 100)
         {
+            _logger.LogError($"Invalid Page size");
             throw new BadRequestException("Page must be between 1 and 100");
         }
 
@@ -75,11 +77,11 @@ public class ProductService : IProductService
                 Category = p.Category,
                 Quantity = p.Quantity,
                 Price = p.Price,
-                ProductImages = (ICollection<ProductImageResponseDto>)p.Images.Select(pi => new ProductImageResponseDto
+                ProductImages = p.Images.Select(pi => new ProductImageResponseDto
                 {
                     Id = pi.Id,
                     ImageUrl = pi.ImageUrl
-                })
+                }).ToList()
             }),
             Page = products.Page,
             PageSize = products.PageSize,
