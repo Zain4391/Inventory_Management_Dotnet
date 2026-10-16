@@ -69,7 +69,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetAllProducts(ProductQueryRequest productQueryRequest)
+    public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetAllProducts([FromQuery] ProductQueryRequest productQueryRequest)
     {
         return Ok(await _productService.GetAllProducts(productQueryRequest));
     }
