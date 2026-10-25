@@ -99,6 +99,12 @@ public class UserService : IUserService
             throw new NotFoundException($"User with {id} not found", id);
         }
 
+        if(id != user.Id)
+        {
+            _logger.LogError("User ids do not match");
+            throw new UnauthorizedException("Invalid user, please enter valid credentials");
+        }
+
         if(updateUserResponseDto.Age.HasValue)
         {
             _logger.LogInformation("Update user Age");
