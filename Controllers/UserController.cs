@@ -27,6 +27,7 @@ public class UserController : ControllerBase
         return Ok(response);
     }
 
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Staff}")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<UpdateUserResponseDto>> UpdateUserFields(Guid id, [FromBody] UpdateUserRequestDto updateUserRequestDto)
     {
