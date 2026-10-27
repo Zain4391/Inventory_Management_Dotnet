@@ -9,7 +9,4 @@ public class RefreshTokenRequestDto
 {
     [Required(ErrorMessage = "Refresh Token is required")]
     public required string RefreshToken {get; set;}
-
-    [Required(ErrorMessage = "Refresh Token must belong to a user")]
-    public Guid UserId {get; set;}
 }

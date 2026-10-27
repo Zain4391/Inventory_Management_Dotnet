@@ -129,12 +129,19 @@ public class AuthService : IAuthService
             _logger.LogError("Token not found");
             throw new UnauthorizedException("Token must be provided");
         }
+
+        // check if a legit but expired token is being used
+        if(token.ExpiresAt <= DateTime.UtcNow)
+        {
+            _logger.LogError("Invalid token");
+            throw new UnauthorizedException("Invalid token");
+        }
         // If a token is null and is being sent again then it means 
         // the token was acquired by am umauthorized party, thus revoke all tokens for the user
         bool isActive = token.RevokedAt is null;
         if(!isActive)
         {
-            await _refreshTokenRepository.RevokeAllTokens(refreshTokenRequestDto.UserId);
+            await _refreshTokenRepository.RevokeAllTokens(token.UserId);
             
             // Clean cookie
             _cookieService.RemoveRefreshTokenFromCookie();
@@ -149,7 +156,7 @@ public class AuthService : IAuthService
     {
         _logger.LogInformation("Revoking the Token");
 
-        // Hash the token as the refresh token sent is plain text one
+        // Hash the token as the refresh token sent is plain text one.
         refreshTokenRequestDto.RefreshToken = _tokenService.HashRefreshToken(refreshTokenRequestDto.RefreshToken);
 
         // Perform the token re-play check and revoke the tokens
