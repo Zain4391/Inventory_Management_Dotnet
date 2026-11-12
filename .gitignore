@@ -1,5 +1,5 @@
 bin/
 obj/
 appsettings.Development.json
-Migrations/
 Logs/
+Claude*
