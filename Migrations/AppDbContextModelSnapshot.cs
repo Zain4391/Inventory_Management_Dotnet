@@ -116,7 +116,7 @@ namespace Inventory_Management_dotnet.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime>("Delivery_date")
+                    b.Property<DateTime?>("Delivery_date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Order_status")
@@ -141,6 +141,37 @@ namespace Inventory_Management_dotnet.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders", (string)null);
+                });
+
+            modelBuilder.Entity("Inventory_Management_dotnet.Models.Entities.OrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("OrderItem_ProductId_Index");
+
+                    b.HasIndex("OrderId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("OrderItem_Order_Product_Index");
+
+                    b.ToTable("Order_Items", (string)null);
                 });
 
             modelBuilder.Entity("Inventory_Management_dotnet.Models.Entities.Product", b =>
@@ -378,6 +409,25 @@ namespace Inventory_Management_dotnet.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Inventory_Management_dotnet.Models.Entities.OrderItem", b =>
+                {
+                    b.HasOne("Inventory_Management_dotnet.Models.Entities.Order", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Inventory_Management_dotnet.Models.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Inventory_Management_dotnet.Models.Entities.ProductImage", b =>
                 {
                     b.HasOne("Inventory_Management_dotnet.Models.Entities.Product", "Product")
@@ -456,6 +506,11 @@ namespace Inventory_Management_dotnet.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Inventory_Management_dotnet.Models.Entities.Order", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Inventory_Management_dotnet.Models.Entities.Product", b =>

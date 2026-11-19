@@ -20,6 +20,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> dbContextOptions) :
 
     public DbSet<RefreshToken> RefreshTokens {get; set;}
 
+    public DbSet<Order> Orders {get; set;}
+    public DbSet<OrderItem> OrderItems {get; set;}
+
     /*
         Apply Fluent API conventions
         Instead of having one big function, let .NET pick the conventions

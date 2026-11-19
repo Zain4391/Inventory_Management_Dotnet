@@ -15,7 +15,7 @@ public class OrderResponseDto
 
     public DateTime CreatedAt {get; set;}
 
-    public DateTime Delivery_date {get; set;}
+    public DateTime? Delivery_date {get; set;}
 
     public STATUS Order_status {get; set;}
 }
