@@ -23,8 +23,9 @@ public sealed class OrderConfig : IEntityTypeConfiguration<Order>
         .IsRequired()
         .HasMaxLength(100);
 
+        // null until the order is Delivered
         b.Property(o => o.Delivery_date)
-        .IsRequired();
+        .IsRequired(false);
 
         b.Property(o => o.Order_status)
         .HasConversion<string>()
