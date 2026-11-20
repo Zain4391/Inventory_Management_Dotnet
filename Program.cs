@@ -27,6 +27,7 @@ try
     builder.Services.AddScoped<IProductRepository, ProductRepository>();
     builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
     // Add services to the container.
     builder.Services.AddScoped<IFileStorageService, FileStorageService>();
