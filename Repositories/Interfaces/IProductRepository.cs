@@ -11,6 +11,9 @@ public interface IProductRepository
 
     Task<Product?> GetProductById(Guid id);
 
+    // Loads several products in one query (WHERE Id IN (...)), missing ids are simply absent
+    Task<List<Product>> GetProductsByIds(IEnumerable<Guid> ids);
+
     // Add Images to the Product
     Task<Product?> AddImage(Guid imageId, string url, Guid id);
 
