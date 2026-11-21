@@ -12,21 +12,26 @@ public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IProductRepository _productRepository;
+    private readonly ICookieService _cookieService;
     private readonly ILogger<IOrderService> _logger;
 
     // Total_price is stored as numeric(10, 2), anything larger fails on insert
     private const decimal MaxOrderTotal = 99_999_999.99m;
 
-    public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, ILogger<IOrderService> logger)
+    public OrderService(IOrderRepository orderRepository, IProductRepository productRepository,
+        ICookieService cookieService, ILogger<IOrderService> logger)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
+        _cookieService = cookieService;
         _logger = logger;
     }
 
-    public async Task<OrderResponseDto> PlaceOrder(PlaceOrderRequestDto placeOrderRequestDto, Guid userId)
+    public async Task<OrderResponseDto> PlaceOrder(PlaceOrderRequestDto placeOrderRequestDto)
     {
-        _logger.LogInformation("Placing order for user {userId} with {itemCount} items", userId, placeOrderRequestDto.Items.Count);
+        _logger.LogInformation("Placing order with {itemCount} items", placeOrderRequestDto.Items.Count);
+
+        Guid userId = _cookieService.GetUserId();
 
         /*
             Merge duplicate ProductIds (unique (OrderId, ProductId) index allows one line per product).
@@ -122,12 +127,28 @@ public class OrderService : IOrderService
             throw new NotFoundException("Order", id);
         }
 
+        /*
+            Someone else's order returns 404, not 403.
+            A 403 would confirm the id exists, letting a caller enumerate other users' orders (IDOR).
+            The message is the same as for a missing order so the two cases can't be told apart.
+        */
+        Guid callerId = _cookieService.GetUserId();
+
+        if(order.UserId != callerId && !_cookieService.IsAdmin())
+        {
+            _logger.LogWarning("User {callerId} tried to read order {id} owned by another user", callerId, id);
+            throw new NotFoundException("Order", id);
+        }
+
         return MapOrder(order);
     }
 
-    public async Task<PageResult<OrderResponseDto>> GetAllOrders(OrderQueryRequest orderQueryRequest, Guid? userId)
+    public async Task<PageResult<OrderResponseDto>> GetAllOrders(OrderQueryRequest orderQueryRequest)
     {
-        _logger.LogInformation("Getting Orders for user {userId}", userId);
+        // Admin sees every order, anyone else is limited to their own (null = no user filter)
+        Guid? userId = _cookieService.IsAdmin() ? null : _cookieService.GetUserId();
+
+        _logger.LogInformation("Getting Orders for user {userId}", userId?.ToString() ?? "all (Admin)");
 
         if(orderQueryRequest.Page < 1)
         {
