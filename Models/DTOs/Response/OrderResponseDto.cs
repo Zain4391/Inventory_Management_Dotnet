@@ -18,4 +18,7 @@ public class OrderResponseDto
     public DateTime? Delivery_date {get; set;}
 
     public STATUS Order_status {get; set;}
+
+    // Line items of the order
+    public ICollection<OrderItemResponseDto> Items {get; set;} = [];
 }

@@ -133,4 +133,10 @@ public class ProductRepository : IProductRepository
         List<ProductImage> productImages = await _productContext.ProductImages.Where(pi => pi.ProductId == id).ToListAsync();  
         return productImages;
     }
+
+    public async Task<List<Product>> GetProductsByIds(IEnumerable<Guid> ids)
+    {
+        List<Product> products = await _productContext.Products.Include(p => p.Images).Where(p => ids.Contains(p.Id)).ToListAsync();
+        return products;
+    }
 }
