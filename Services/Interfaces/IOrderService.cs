@@ -11,5 +11,6 @@ public interface IOrderService
 
     Task<OrderResponseDto> GetOrderById(Guid id);
 
-    Task<PageResult<OrderResponseDto>> GetAllOrders(OrderQueryRequest orderQueryRequest);
+    // userId limits the results to one user's orders, null returns all orders
+    Task<PageResult<OrderResponseDto>> GetAllOrders(OrderQueryRequest orderQueryRequest, Guid? userId);
 }

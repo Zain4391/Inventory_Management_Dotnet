@@ -36,6 +36,7 @@ try
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<ICookieService, CookieService>();
     builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IOrderService, OrderService>();
 
     builder.Services.AddOptions<BlobStorageOptions>()
         .BindConfiguration(BlobStorageOptions.SectionName)
