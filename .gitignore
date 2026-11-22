@@ -4,3 +4,5 @@ appsettings.Development.json
 Logs/
 Claude*
 .claude
+.api-probe
+postman_*

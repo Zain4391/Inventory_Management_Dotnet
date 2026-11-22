@@ -1,6 +1,89 @@
 @Inventory_Management_dotnet_HostAddress = http://localhost:5142
 
-GET {{Inventory_Management_dotnet_HostAddress}}/weatherforecast/
-Accept: application/json
+# Auth reads the JWT from the access_token cookie. The cookie is Secure, so most clients
+# won't send it back over http. Requests below send it explicitly from the log-in response.
+# Run "log-in" first. Requests that depend on it are marked "requires: log-in".
+
+### Sign up (default role: Staff)
+POST {{Inventory_Management_dotnet_HostAddress}}/api/auth/sign-up
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "Passw0rd!",
+  "age": 25,
+  "gender": "male"
+}
 
 ###
+# @name login
+POST {{Inventory_Management_dotnet_HostAddress}}/api/auth/log-in
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Passw0rd!"
+}
+
+###
+@accessToken = {{login.response.body.$.access_token}}
+@refreshToken = {{login.response.body.$.refresh_token}}
+
+### Refresh tokens (rotates the refresh token)
+POST {{Inventory_Management_dotnet_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### List products (anonymous)
+GET {{Inventory_Management_dotnet_HostAddress}}/api/products?page=1&pageSize=10&sortBy=price
+Accept: application/json
+
+### Get product by id (anonymous)
+GET {{Inventory_Management_dotnet_HostAddress}}/api/products/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Place order (requires: log-in). Expect 201 + Location: /api/orders/{id}
+# @name placeOrder
+POST {{Inventory_Management_dotnet_HostAddress}}/api/orders
+Content-Type: application/json
+Cookie: access_token={{accessToken}}
+
+{
+  "deliveryAddress": "221B Baker Street, London",
+  "items": [
+    { "productId": "00000000-0000-0000-0000-000000000000", "quantity": 1 }
+  ]
+}
+
+### Get order by id (requires: log-in). Owner or Admin, anyone else gets 404
+GET {{Inventory_Management_dotnet_HostAddress}}/api/orders/{{placeOrder.response.body.$.id}}
+Accept: application/json
+Cookie: access_token={{accessToken}}
+
+### List orders (requires: log-in). Admin sees all orders, others only their own
+GET {{Inventory_Management_dotnet_HostAddress}}/api/orders?page=1&pageSize=10&status=Pending&sortBy=createdAt&sortDescending=true
+Accept: application/json
+Cookie: access_token={{accessToken}}
+
+### List orders with invalid page size. Expect 400
+GET {{Inventory_Management_dotnet_HostAddress}}/api/orders?page=1&pageSize=500
+Accept: application/json
+Cookie: access_token={{accessToken}}
+
+### List orders without a token. Expect 401
+GET {{Inventory_Management_dotnet_HostAddress}}/api/orders
+Accept: application/json
+
+### Get user by id (requires: log-in, Admin or Staff)
+GET {{Inventory_Management_dotnet_HostAddress}}/api/users/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Cookie: access_token={{accessToken}}
+
+### List users (requires: log-in, Admin)
+GET {{Inventory_Management_dotnet_HostAddress}}/api/users?page=1&pageSize=10
+Accept: application/json
+Cookie: access_token={{accessToken}}
