@@ -9,8 +9,12 @@ public class PlaceOrderRequestDto
     [StringLength(100, ErrorMessage = "DeliveryAddress cannot exceed 100 characters")]
     public required string DeliveryAddress {get; set;}
 
-    // Duplicate ProductIds are allowed here, the service merges them into one line
+    /*
+        Duplicate ProductIds are allowed here, the service merges them into one line.
+        MaxLength caps the work per request: each line is a conditional stock UPDATE inside one transaction.
+    */
     [Required(ErrorMessage = "Items is required")]
     [MinLength(1, ErrorMessage = "Order must contain at least one item")]
+    [MaxLength(50, ErrorMessage = "Order cannot contain more than 50 items")]
     public required List<OrderItemRequestDto> Items {get; set;} = [];
 }

@@ -33,6 +33,13 @@ public class OrderService : IOrderService
 
         Guid userId = _cookieService.GetUserId();
 
+        // DataAnnotations validate each item's fields but skip null elements, so "items": [null] gets here
+        if(placeOrderRequestDto.Items.Any(i => i is null))
+        {
+            _logger.LogWarning("Order for user {userId} contains null items", userId);
+            throw new BadRequestException("Items cannot contain null entries");
+        }
+
         /*
             Merge duplicate ProductIds (unique (OrderId, ProductId) index allows one line per product).
             Summed as long: two quantities near int.MaxValue would overflow an int into a negative number
@@ -160,6 +167,13 @@ public class OrderService : IOrderService
         {
             _logger.LogWarning("Invalid Page size {pageSize}", orderQueryRequest.PageSize);
             throw new BadRequestException("Page size must be between 1 and 100");
+        }
+
+        // Skip((Page - 1) * PageSize) is int math in the repository, a huge Page overflows into a negative OFFSET
+        if((long)(orderQueryRequest.Page - 1) * orderQueryRequest.PageSize > int.MaxValue)
+        {
+            _logger.LogWarning("Page {page} is too large for page size {pageSize}", orderQueryRequest.Page, orderQueryRequest.PageSize);
+            throw new BadRequestException("Page is too large");
         }
 
         PageResult<Order> orders = await _orderRepository.GetAllOrders(orderQueryRequest, userId);

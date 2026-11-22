@@ -38,6 +38,13 @@ public class UserService : IUserService
             throw new BadRequestException("Page must be between 1 and 100");
         }
 
+        // Skip((Page - 1) * PageSize) is int math in the repository, a huge Page overflows into a negative OFFSET
+        if((long)(userQueryRequest.Page - 1) * userQueryRequest.PageSize > int.MaxValue)
+        {
+            _logger.LogWarning("Page {page} is too large for page size {pageSize}", userQueryRequest.Page, userQueryRequest.PageSize);
+            throw new BadRequestException("Page is too large");
+        }
+
         PageResult<AppUser> users  =await _userRepository.GetAllUsers(userQueryRequest);
         return new PageResult<UserResponseDto>
         {

@@ -65,6 +65,13 @@ public class ProductService : IProductService
             throw new BadRequestException("Page must be between 1 and 100");
         }
 
+        // Skip((Page - 1) * PageSize) is int math in the repository, a huge Page overflows into a negative OFFSET
+        if((long)(productQueryRequest.Page - 1) * productQueryRequest.PageSize > int.MaxValue)
+        {
+            _logger.LogWarning("Page {page} is too large for page size {pageSize}", productQueryRequest.Page, productQueryRequest.PageSize);
+            throw new BadRequestException("Page is too large");
+        }
+
         PageResult<Product> products = await _productRepository.GetAllProducts(productQueryRequest);
 
         return new PageResult<ProductResponseDto>
